@@ -45,14 +45,14 @@ sub remote_call {
 
     if( defined($shell_file)) {
         my $spawn = Expect->spawn("ssh $usr\@$ip");
-        my $PROMPT  = '[\]\$\>\#]\s$';
+        my $PROMPT  = '[\]\$\>\#]';
         $spawn->log_stdout(0);
 
         $spawn->expect(3, 
             [ qr/\(yes\/no\)\?\s*$/ => sub { $spawn->send("yes\n"); exp_continue; } ],
             [ qr/assword:\s*$/  => sub { $spawn->send("$pass\n") if defined $pass; } ],);
 
-        $spawn->send("su -\n") if $spawn->expect(undef, '-re' => qr/\[$usr.*$/);
+        $spawn->send("su -\n") if $spawn->expect(undef, '-re' => qr/$usr.*$/);
         sleep(1); #hard to match chinese,just wait.
         $spawn->send("$root_pass\n") if $spawn->expect(undef, '-re' => qr/([\x80-\xFF][\x80-\xFF])*/);
         $spawn->send("/bin/bash /tmp/$shell_file  > /tmp/$shell_file.log 2>&1 \n") if $spawn->expect(undef, '-re' => qr/$PROMPT/);
